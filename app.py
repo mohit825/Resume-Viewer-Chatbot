@@ -4,8 +4,14 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import (SystemMessage, AIMessage, HumanMessage)
+from langchain_community.document_loaders import PyPDFLoader
 
 load_dotenv()
+loader = PyPDFLoader('resume.pdf')
+docs = loader.load()
+print("Number of documents:", len(docs))
+print("Document type:", type(docs[0]))
+
 # api_key = os.getenv("GOOGLE_API_KEY")
 
 st.title("resume-ai")
@@ -19,6 +25,9 @@ if "messages" not in st.session_state:
 
 question = st.chat_input("Ask a question")
 
+if st.button("Clear Chat"):
+    st.session_state.messages = []
+
 if question:
     st.session_state.messages.append({
         "role": 'user',
@@ -27,7 +36,7 @@ if question:
 
 for item in st.session_state.messages:
     with st.chat_message(item["role"]):
-                st.write(item["content"])
+        st.write(item["content"])
 
 for item in st.session_state.messages:
     if item["role"] == "assistant":
@@ -61,6 +70,10 @@ if question:
             })
         else:
             st.warning("Gemini returned no text. Try rephrasing your question.")
+            st.session_state.messages.pop()
     except Exception as e:
+        if (st.session_state.messages and st.session_state.messages[-1]["role"] == "user"):
+            st.session_state.messages.pop()
         st.error("Gemini couldn't respond.")
         st.exception(e)
+
