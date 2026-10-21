@@ -3,3 +3,4 @@ langchain-google-genai
 python-dotenv
 langchain-community 
 pypdf
+langchain-text-splitters
